@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: circleci/openjdk:10
+    working_directory: ~/repo
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "build.gradle" }}
+        - v1-dependencies-
+    - run:
+        name: run tests
+        command: |
+          gradle build --stacktrace
+    - save_cache:
+        paths:
+        - "~/.ivy2/cache"
+        - "~/.m2"
+        - "~/.gradle/caches"
+        - "~/.gradle/wrapper"
+        key: v1-dependencies-{{ checksum "build.gradle" }}
+    - store_artifacts:
+        path: ~/repo/build/reports
