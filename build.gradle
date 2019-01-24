@@ -5,6 +5,8 @@ plugins {
     id 'checkstyle'
     id 'pmd'
     id "com.github.spotbugs" version "1.6.9"
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -13,7 +15,25 @@ repositories {
     jcenter()
 }
 dependencies {
+    compile 'org.glassfish.jersey.core:jersey-client:2.25'
+    compile 'javax.activation:javax.activation-api:1.2.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    compile 'commons-cli:commons-cli:1.4'
+    compile 'org.slf4j:slf4j-simple:1.7.25'
+
     testCompile 'junit:junit:4.+'
+    testCompile 'org.mockito:mockito-all:1.10.19'
+}
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.github.takemikami.databricks.workspacesync.SyncCommand'
+    }
+}
+artifacts {
+    archives shadowJar
+}
+lombok {
+    version = '1.18.4'
 }
 
 checkstyle {
