@@ -38,6 +38,7 @@ public class SyncCommand {
     options.addRequiredOption("t", "token", true, "Databricks access token");
     options.addRequiredOption("l", "localdir", true, "Local directory path");
     options.addRequiredOption("r", "remotedir", true, "Remote directory path");
+    options.addOption("e", "excludes", true, "Exclude file pattern");
 
     // Parse Options
     if (args.length == 0) {
@@ -63,6 +64,11 @@ public class SyncCommand {
     String token = cmd.getOptionValue("token");
     String localdir = cmd.getOptionValue("localdir");
     String remotedir = cmd.getOptionValue("remotedir");
+    String excludeString = cmd.getOptionValue("excludes");
+    String[] excludes = new String[]{};
+    if (excludeString != null) {
+      excludes = excludeString.split(",");
+    }
 
     LocalWorkspaceClient lcli = new LocalWorkspaceClient(localdir, remotedir);
     DatabricksWorkspaceClient cli = new DatabricksWorkspaceClient();
@@ -81,10 +87,10 @@ public class SyncCommand {
     // Execute
     switch (subcmd) {
       case "upload":
-        svc.upload(remotedir, null, true);
+        svc.upload(remotedir, excludes, true);
         break;
       case "download":
-        svc.download(remotedir, null);
+        svc.download(remotedir, excludes);
         break;
       default:
         break;

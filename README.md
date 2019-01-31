@@ -23,16 +23,17 @@ $ gradle shadowJar
 Run download command.
 
 ```
-$ java -jar build/libs/databricks-workspace-sync-all.jar download -h <your databricks host> -t <your token> -l <local directory> -r <remote directory>
+$ java -jar build/libs/databricks-workspace-sync-all.jar download -h <your databricks host> -t <your token> -l <local directory> -r <remote directory> -e <exclucde file pattern>
 ```
 
 Run upload command.
 
 ```
-$ java -jar build/libs/databricks-workspace-sync-all.jar upload -h <your databricks host> -t <your token> -l <local directory> -r <remote directory>
+$ java -jar build/libs/databricks-workspace-sync-all.jar upload -h <your databricks host> -t <your token> -l <local directory> -r <remote directory> -e <exclucde file pattern>
 ```
 
 - your databricks host: ex. 'community.cloud.databricks.com'
 - your token: string of generated token
 - local directory: ex '/tmp'
 - remote directory: ex '/Users/you@domain/folder1'
+- exclude file pattern (optional): ex '/tmp/*'
