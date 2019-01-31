@@ -1,6 +1,7 @@
 package com.github.takemikami.databricks.workspacesync;
 
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.github.takemikami.databricks.workspacesync.WorkspaceObject.Language;
@@ -45,6 +46,24 @@ public class SyncServiceTest {
 
     verify(localCli)
         .writeObject("/dir1/dir2/file1", WorkspaceObject.Language.SCALA, true, "body string");
+  }
+
+  @Test
+  public void testDownloadExcludes() throws Exception {
+    List<WorkspaceObject> lst = new LinkedList<>();
+    lst.add(new WorkspaceObject("/dir1/dir2", "DIRECTORY", ""));
+    lst.add(new WorkspaceObject("/dir1/dir2/file1", "NOTEBOOK", "SCALA"));
+    lst.add(new WorkspaceObject("/dir1/dir2/exfile1", "NOTEBOOK", "SCALA"));
+    doReturn(lst).when(client).getList("/dir1", true);
+    doReturn("body string").when(client).exportObject("/dir1/dir2/file1");
+    doReturn("body string ex").when(client).exportObject("/dir1/dir2/exfile1");
+
+    svc.download("/dir1", new String[]{"*/ex*"});
+
+    verify(localCli)
+        .writeObject("/dir1/dir2/file1", WorkspaceObject.Language.SCALA, true, "body string");
+    verify(localCli, never())
+        .writeObject("/dir1/dir2/exfile1", WorkspaceObject.Language.SCALA, true, "body string ex");
   }
 
   @Test
