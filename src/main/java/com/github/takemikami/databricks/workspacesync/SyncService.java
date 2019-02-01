@@ -15,6 +15,32 @@ public class SyncService {
   private DatabricksWorkspaceClient cli;
   private LocalWorkspaceClient lcli;
 
+  private static String COMMENT_OUT_TRICK_KEYWORD = "NODBSYNC";
+
+  String filterBodyUpload(String org) {
+    String[] lines = Arrays.stream(org.split("\n")).map(s -> {
+      if (s.matches("^[^#].*#\\s*" + COMMENT_OUT_TRICK_KEYWORD + "\\s*")) {
+        return "# " + s;
+      } else if (s.matches("^[^//].*//\\s*" + COMMENT_OUT_TRICK_KEYWORD + "\\s*")) {
+        return "// " + s;
+      }
+      return s;
+    }).toArray(String[]::new);
+    return String.join("\n", lines);
+  }
+
+  String filterBodyDownload(String org) {
+    String[] lines = Arrays.stream(org.split("\n")).map(s -> {
+      if (s.matches("^#\\s.*#\\s*" + COMMENT_OUT_TRICK_KEYWORD + "\\s*")) {
+        return s.substring(2);
+      } else if (s.matches("^//\\s.*//\\s*" + COMMENT_OUT_TRICK_KEYWORD + "\\s*")) {
+        return s.substring(3);
+      }
+      return s;
+    }).toArray(String[]::new);
+    return String.join("\n", lines);
+  }
+
   /**
    * constructor.
    */
@@ -46,7 +72,7 @@ public class SyncService {
         .forEach(f -> {
           try {
             String body = cli.exportObject(f.getPath());
-            lcli.writeObject(f.getPath(), f.getLanguage(), true, body);
+            lcli.writeObject(f.getPath(), f.getLanguage(), true, filterBodyDownload(body));
             System.out.println("download: " + f.getPath()); //NOPMD
           } catch (DatabricksClientException e) {
             log.warn("Download Error: ", e);
@@ -68,7 +94,7 @@ public class SyncService {
         .forEach(f -> {
           try {
             String body = lcli.readObject(f.getPath(), f.getLanguage());
-            cli.importObject(f.getPath(), f.getLanguage(), overwrite, body);
+            cli.importObject(f.getPath(), f.getLanguage(), overwrite, filterBodyUpload(body));
             System.out.println("upload: " + f.getPath()); //NOPMD
           } catch (DatabricksClientException e) {
             log.warn("Download Error: ", e);

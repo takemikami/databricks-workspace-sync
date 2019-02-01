@@ -1,5 +1,6 @@
 package com.github.takemikami.databricks.workspacesync;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,7 +70,6 @@ public class SyncServiceTest {
   @Test
   public void testUpload() throws Exception {
     List<WorkspaceObject> lst = new LinkedList<>();
-    lst.add(new WorkspaceObject("/dir1/dir2", "DIRECTORY", ""));
     lst.add(new WorkspaceObject("/dir1/dir2/file1", "NOTEBOOK", "SCALA"));
     doReturn(lst).when(localCli).getList("/dir1");
     doReturn("body string").when(localCli).readObject("/dir1/dir2/file1", Language.SCALA);
@@ -80,4 +80,33 @@ public class SyncServiceTest {
         .importObject("/dir1/dir2/file1", WorkspaceObject.Language.SCALA, true, "body string");
   }
 
+  @Test
+  public void testBodyFilterUpload() throws Exception {
+    String original = "this is python # NODBSYNC";
+    String expect = "# this is python # NODBSYNC";
+    assertEquals(expect, svc.filterBodyUpload(original));
+
+    original = "this is scala // NODBSYNC";
+    expect = "// this is scala // NODBSYNC";
+    assertEquals(expect, svc.filterBodyUpload(original));
+
+    original = "nothing to do";
+    expect = "nothing to do";
+    assertEquals(expect, svc.filterBodyUpload(original));
+  }
+
+  @Test
+  public void testBodyFilterDownload() throws Exception {
+    String original = "# this is python # NODBSYNC";
+    String expect = "this is python # NODBSYNC";
+    assertEquals(expect, svc.filterBodyDownload(original));
+
+    original = "// this is scala // NODBSYNC";
+    expect = "this is scala // NODBSYNC";
+    assertEquals(expect, svc.filterBodyDownload(original));
+
+    original = "nothing to do";
+    expect = "nothing to do";
+    assertEquals(expect, svc.filterBodyDownload(original));
+  }
 }
